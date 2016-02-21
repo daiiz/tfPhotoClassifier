@@ -7,7 +7,7 @@ $ cp -r workspace/seed workspace/sample
 上記を実行してsampleテーマを作成した場合，以降の手順中の`THEME`は「sample」を指す．
 
 ## 訓練画像収集，教師ラベル付け 〜 訓練 〜 評価
-tfPhotoPaletteでエクスポートしたJSOｎファイルを workspace/`THEME`/raw_jsons/ フォルダに保存する．
+[tfPhotoPalette](http://daiiz.hatenablog.com/entry/2016/02/19/235524)でエクスポートしたJSONファイルを workspace/`THEME`/raw_jsons/ フォルダに保存する．
 cifar10.labelsで与えた内容に従って，tfPhotoPaletteで出力されたデータをラベルごとのJSONファイルに自動で分けられる．
 この際に収集した写真データを，訓練用と評価用に分けることができる．
 実行の途中で，各クラス（ラベル）に属する写真の総枚数が提示されて，そのうち何枚を評価用に割り振るかを指定できる．
