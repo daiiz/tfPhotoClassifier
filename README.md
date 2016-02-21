@@ -2,6 +2,7 @@
 
 ## 新規テーマ作成
 ```
+$ cd tfPhotoClassifier/
 $ cp -r workspace/seed workspace/sample
 ```
 上記を実行してsampleテーマを作成した場合，以降の手順中の`THEME`は「sample」を指す．
