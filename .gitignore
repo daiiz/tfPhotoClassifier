@@ -1,0 +1,8 @@
+.DS_Store
+**/*.ckpt*
+**/*.pyc
+**/*.tfrecords
+**/*.local
+**/toys/*.jpg
+**/*photocropper-*.json
+**/raw_jsons/*photocropper-*.json
