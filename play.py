@@ -7,18 +7,13 @@ from tensorflow.models.image.cifar10 import cifar10
 import tensorflow as tf
 from common import *
 
-FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_string('theme', 'sample', 'theme')
 tf.app.flags.DEFINE_string('jpg', '', '.jpg file')
 tf.app.flags.DEFINE_string('toyjpg', '', 'workspace/theme/toys/*.jpg file')
-
-theme = FLAGS.theme
-cifar10.NUM_CLASSES = get_num_classes(theme)
+FLAGS = tf.app.flags.FLAGS
 FLAGS.batch_size = 1
 
-size = get_size()
-
-def detect_input_file ():
+def detect_input_file (theme):
     input_image_file = ''
     # 入力画像ファイルパスを決定する
     if FLAGS.toyjpg != '':
@@ -30,7 +25,9 @@ def detect_input_file ():
     return input_image_file
 
 
-def play (theme, img):
+def play_main (theme, img):
+    size = get_size()
+    cifar10.NUM_CLASSES = get_num_classes(theme)
     checkpoint_path = 'workspace/{}/train'.format(theme)
     # 学習結果を利用するための準備
     cifar10.IMAGE_SIZE = size['width']
@@ -55,8 +52,9 @@ def play (theme, img):
 
 
 if __name__ == '__main__':
-    input_img_file = detect_input_file()
+    theme = FLAGS.theme
+    input_img_file = detect_input_file(theme=theme)
     # 画像ファイルを読み込む
     with open(input_img_file) as f:
-        output = play(theme=theme, img=f.read())
+        output = play_main(theme=theme, img=f.read())
         print_answer(theme, output)
