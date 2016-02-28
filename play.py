@@ -13,11 +13,11 @@ tf.app.flags.DEFINE_string('toyjpg', '', 'workspace/theme/toys/*.jpg file')
 FLAGS = tf.app.flags.FLAGS
 FLAGS.batch_size = 1
 
-def detect_input_file (theme):
+def detect_input_file ():
     input_image_file = ''
     # 入力画像ファイルパスを決定する
     if FLAGS.toyjpg != '':
-        input_image_file = 'workspace/{}/toys/{}.jpg'.format(theme, FLAGS.toyjpg)
+        input_image_file = 'workspace/{}/toys/{}.jpg'.format(FLAGS.theme, FLAGS.toyjpg)
     if FLAGS.jpg != '':
         input_image_file = FLAGS.jpg
     if input_image_file == '':
@@ -25,12 +25,12 @@ def detect_input_file (theme):
     return input_image_file
 
 
-def play_main (theme, img):
+def play_main (img):
     size = get_size()
-    cifar10.NUM_CLASSES = get_num_classes(theme)
-    checkpoint_path = 'workspace/{}/train'.format(theme)
     # 学習結果を利用するための準備
     cifar10.IMAGE_SIZE = size['width']
+    cifar10.NUM_CLASSES = get_num_classes(FLAGS.theme)
+    checkpoint_path = 'workspace/{}/train'.format(FLAGS.theme)
     # 入力は画像1枚分なので，FRAGS.batch_size=1としておく
     images = tf.placeholder(tf.float32, shape=(1, cifar10.IMAGE_SIZE, cifar10.IMAGE_SIZE, size['depth']))
     logits = tf.nn.softmax(cifar10.inference(images))
@@ -52,9 +52,8 @@ def play_main (theme, img):
 
 
 if __name__ == '__main__':
-    theme = FLAGS.theme
-    input_img_file = detect_input_file(theme=theme)
+    input_img_file = detect_input_file()
     # 画像ファイルを読み込む
     with open(input_img_file) as f:
-        output = play_main(theme=theme, img=f.read())
-        print_answer(theme, output)
+        output = play_main(img=f.read())
+        print_answer(FLAGS.theme, output)

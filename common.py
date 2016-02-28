@@ -45,8 +45,14 @@ def get_num_examples_per_epoch_for_train (theme):
     return len_train_examples
 
 
-# 答えを整形して表示する
-def print_answer (theme, ans_list):
+# 最もスコアが高い項目を返す
+def get_ans (theme, ans_list):
+    labels_data = load_labeles_data(theme)
+    answer_expressions = labels_data['answer_expression']
+    return answer_expressions[ans_list.index(max(ans_list))]
+
+
+def get_pretty_scores (theme, ans_list):
     labels_data = load_labeles_data(theme)
     answer_expressions = labels_data['answer_expression']
     num_classes = len(ans_list)
@@ -55,9 +61,14 @@ def print_answer (theme, ans_list):
     for i in range(num_classes):
         ans_expr = answer_expressions[i]
         res[str(ans_expr)] = ans_list[i]
+    return res
+
+# 答えを整形して表示する
+def print_answer (theme, ans_list):
+    res = get_pretty_scores(theme, ans_list)
     print(json.dumps(res, indent=4, ensure_ascii=False))
     # 最も数値が大きい答えを示す
-    print(answer_expressions[ans_list.index(max(ans_list))])
+    print(get_ans(theme, ans_list))
 
 
 def get_size ():
