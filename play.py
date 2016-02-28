@@ -30,10 +30,8 @@ def detect_input_file ():
     return input_image_file
 
 
-if __name__ == '__main__':
-    input_img_file = detect_input_file()
+def play (theme, img):
     checkpoint_path = 'workspace/{}/train'.format(theme)
-
     # 学習結果を利用するための準備
     cifar10.IMAGE_SIZE = size['width']
     # 入力は画像1枚分なので，FRAGS.batch_size=1としておく
@@ -47,12 +45,18 @@ if __name__ == '__main__':
         saver.restore(sess, ckpt.model_checkpoint_path)
     else:
         print('No ckpt file')
-
-    f = open(input_img_file)
-    img = f.read()
+    # 識別器での判定処理
     decoded = tf.image.decode_jpeg(img, channels=3)
     inputs = tf.reshape(decoded, decoded.eval(session=tf.Session()).shape)
     inputs = tf.image.per_image_whitening(inputs)
     inputs = tf.image.resize_images(tf.expand_dims(inputs, 0), cifar10.IMAGE_SIZE, cifar10.IMAGE_SIZE)
     output = sess.run(logits, feed_dict={images: inputs.eval(session=tf.Session())}).flatten().tolist()
-    print_answer(theme, output)
+    return output
+
+
+if __name__ == '__main__':
+    input_img_file = detect_input_file()
+    # 画像ファイルを読み込む
+    with open(input_img_file) as f:
+        output = play(theme=theme, img=f.read())
+        print_answer(theme, output)
