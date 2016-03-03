@@ -37,7 +37,7 @@ def classify ():
 
 if __name__ == '__main__':
     tf.app.flags.DEFINE_string('theme', 'sample', 'theme')
-    tf.app.flags.DEFINE_string('port', '8000', 'port')
+    tf.app.flags.DEFINE_string('port', '52892', 'port')
     FLAGS = tf.app.flags.FLAGS
     FLAGS.batch_size = 1
 
