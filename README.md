@@ -46,7 +46,7 @@ $ python gen_toys.py --theme=sample --ans=0
 ```
 
 #### GUI
-または，[tfPhotoPalette](https://chrome.google.com/webstore/detail/tfphotopalette/gcpfanfkkjpolcdicokfjphmdnelhbbb)を使用して判定
+[tfPhotoPalette](https://chrome.google.com/webstore/detail/tfphotopalette/gcpfanfkkjpolcdicokfjphmdnelhbbb)を使用して判定
 ```
 $ python palette_server.py --theme=sample
 ```
