@@ -33,6 +33,7 @@ $  tensorboard --logdir workspace/sample/eval
 ```
 
 ## 試して遊ぶ
+#### CUI
 規定サイズの任意のJPEG画像ファイルを渡して判定
 ```
 $ python play.py --theme=sample --jpg=workspace/sample/toys/toy-ans0-0.jpg
@@ -44,6 +45,7 @@ $ python play.py --theme=sample --toyjpg=toy-ans0-0
 $ python gen_toys.py --theme=sample --ans=0
 ```
 
+#### GUI
 または，[tfPhotoPalette](https://chrome.google.com/webstore/detail/tfphotopalette/gcpfanfkkjpolcdicokfjphmdnelhbbb)を使用して判定
 ```
 $ python palette_server.py --theme=sample
