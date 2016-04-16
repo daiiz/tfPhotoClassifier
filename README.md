@@ -43,3 +43,9 @@ $ python play.py --theme=sample --toyjpg=toy-ans0-0
 ```
 $ python gen_toys.py --theme=sample --ans=0
 ```
+
+または，[tfPhotoPalette](https://chrome.google.com/webstore/detail/tfphotopalette/gcpfanfkkjpolcdicokfjphmdnelhbbb)を使用して判定
+```
+$ python palette_server.py --theme=sample
+```
+![https://gyazo.com/14f57b3eee0b2f636251a5e9f089984d](https://i.gyazo.com/14f57b3eee0b2f636251a5e9f089984d.png)
