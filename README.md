@@ -28,8 +28,8 @@ $ python eval.py --theme=sample
 ```
 TensorBoard:
 ```
-$  tensorboard --logdir workspace/sample/train
-$  tensorboard --logdir workspace/sample/eval
+$ tensorboard --logdir workspace/sample/train
+$ tensorboard --logdir workspace/sample/eval
 ```
 
 ## 試して遊ぶ
@@ -57,3 +57,4 @@ $ python palette_server.py --theme=sample
 $ python prepare_demo.py --theme sample
 $ open demo/list_photos.html
 ```
+![https://i.gyazo.com/f05267bb52be7a7c5f54e44e9181a196](https://i.gyazo.com/f05267bb52be7a7c5f54e44e9181a196.png)
