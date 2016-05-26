@@ -6,5 +6,7 @@
 **/toys/*.jpg
 **/*photocropper-*.json
 **/raw_jsons/*photocropper-*.json
+demo/photocropper.js
+
 workspace/*
 !workspace/seed
