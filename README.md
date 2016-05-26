@@ -51,3 +51,9 @@ $ python gen_toys.py --theme=sample --ans=0
 $ python palette_server.py --theme=sample
 ```
 ![https://gyazo.com/14f57b3eee0b2f636251a5e9f089984d](https://i.gyazo.com/14f57b3eee0b2f636251a5e9f089984d.png)
+
+## 訓練画像の一部をリスト表示する
+```
+$ python prepare_demo.py --theme sample
+$ open demo/list_photos.html
+```

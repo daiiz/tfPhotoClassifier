@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Photo list - tfPhotoClassifier</title>
+
+        <!-- Add to homescreen for Chrome on Android -->
+        <meta name="mobile-web-app-capable" content="yes">
+        <link rel="shortcut icon" href="">
+
+        <!-- Add to homescreen for Safari on iOS -->
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="apple-mobile-web-app-title" content="">
+        <link rel="apple-touch-icon-precomposed" href="">
+
+        <!-- Tile icon for Win8 -->
+        <meta name="msapplication-TileImage" content="">
+        <meta name="msapplication-TileColor" content="">
+        
+        <link href="http://fonts.googleapis.com/earlyaccess/notosansjp.css" rel="stylesheet" type="text/css"/>
+        <script src="lib/jquery.js"></script>
+        <link rel="stylesheet" href="#">
+        <style>
+            html, body {
+                font-family: 'Noto Sans JP', sans-serif;
+                margin: 12px;
+            }
+            .mini-photo {
+                width: 32px;
+                height: 32px;
+                background-position: center center;
+                background-repeat: no-repeat;
+                background-size: cover;
+            }
+            .ans-label {
+                padding-right: 16px;
+                font-weight: bold;
+            }
+            table, tr, td {
+                border: 0px;
+            }
+        </style>
+    </head>
+    <body>
+        <h2 id="title">tfPhotoClassifier</h2>
+        <div id="table">
+        </div>
+        
+        <script src="photocropper.js"></script>
+        <script src="list_photos.js"></script>
+    </body>
+</html>
