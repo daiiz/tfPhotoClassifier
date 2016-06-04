@@ -3,7 +3,7 @@
 import os
 import time
 import numpy as np
-from tensorflow.models.image.cifar10 import cifar10
+from models.image.cifar10 import cifar10
 import tensorflow as tf
 from common import *
 
