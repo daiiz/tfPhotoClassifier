@@ -1,12 +1,17 @@
 .DS_Store
 **/*.ckpt*
 **/*.pyc
-**/*.tfrecords
 **/*.local
+demo/photocropper.js
+demo/tmp/ga.jpg
+demo/*.dat
+demo/node_modules
+ml-lib/tsne/bhtsne/bh_tsne
+
+### 以下は，実験時には無効化すると良い
+**/*.tfrecords
 **/toys/*.jpg
 **/*photocropper-*.json
 **/raw_jsons/*photocropper-*.json
-demo/photocropper.js
-
 workspace/*
 !workspace/seed
