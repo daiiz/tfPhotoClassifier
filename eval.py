@@ -1,7 +1,7 @@
 # coding: utf8
 # python eval.py --theme=sample
 import os
-from tensorflow.models.image.cifar10 import cifar10
+from models.image.cifar10 import cifar10
 import tensorflow as tf
 import numpy as np
 import math

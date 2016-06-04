@@ -3,7 +3,7 @@
 # python play.py --theme=sample --toyjpg=toy-ans0-0
 
 import os
-from tensorflow.models.image.cifar10 import cifar10
+from models.image.cifar10 import cifar10
 import tensorflow as tf
 from common import *
 

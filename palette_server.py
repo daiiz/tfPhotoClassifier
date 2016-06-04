@@ -3,7 +3,7 @@
 from flask import Flask, request, jsonify
 import urllib
 from common import *
-from tensorflow.models.image.cifar10 import cifar10
+from models.image.cifar10 import cifar10
 import tensorflow as tf
 
 app = Flask(__name__)
