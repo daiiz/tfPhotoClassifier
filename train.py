@@ -26,7 +26,10 @@ def distorted_inputs (tfrecord_file_paths=[]):
     fqueue = tf.train.string_input_producer(tfrecord_file_paths)
     reader = tf.TFRecordReader()
     key, serialized_example = reader.read(fqueue)
-    features = tf.parse_single_example(serialized_example, dense_keys=['label', 'image'], dense_types=[tf.int64, tf.string])
+    features = tf.parse_single_example(serialized_example, features={
+        'label': tf.FixedLenFeature([], tf.int64),
+        'image': tf.FixedLenFeature([], tf.string)
+    })
     image = tf.image.decode_jpeg(features['image'], channels=size['depth'])
     image = tf.cast(image, tf.float32)
     image.set_shape([size['width'], size['height'], size['depth']])
