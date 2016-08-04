@@ -1,5 +1,15 @@
 # tfPhotoClassifier
 
+## インストール
+必要なモジュールをインストールする
+```
+$ pip install -r pip_modules.txt
+```
+続いて，TensorFlow本体をインストールする
+```
+$ pip install --upgrade https://storage.googleapis.com/tensorflow/mac/tensorflow-0.6.0-py2-none-any.whl
+```
+
 ## 新規テーマ作成
 ```
 $ cd tfPhotoClassifier/
