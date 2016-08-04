@@ -5,10 +5,7 @@
 ```
 $ pip install -r pip_modules.txt
 ```
-続いて，TensorFlow本体をインストールする
-```
-$ pip install --upgrade https://storage.googleapis.com/tensorflow/mac/tensorflow-0.6.0-py2-none-any.whl
-```
+続いて，TensorFlow本体を[公式ページ](https://www.tensorflow.org/versions/r0.10/get_started/os_setup.html)を参考にしてインストールする
 
 ## 新規テーマ作成
 ```
@@ -30,7 +27,7 @@ $ python gen_labeled_jsons.py --theme=sample
 * photocropper-`LABEL_NUMBER`.json
 * eval-photocropper-`LABEL_NUMBER`.json
 
-TensorFlow (Python version 2.7.10, TensorFlow version 0.6.0):
+TensorFlow (Python version 2.7.10, TensorFlow version 0.10.0rc0):
 ```
 $ python gen_tfrecords.py --theme=sample
 $ python train.py --theme=sample

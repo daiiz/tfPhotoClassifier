@@ -1,4 +1,4 @@
-# Copyright 2015 Google Inc. All Rights Reserved.
+# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,19 +14,14 @@
 # ==============================================================================
 
 """Builds the CIFAR-10 network.
-
 Summary of available functions:
-
  # Compute input images and labels for training. If you would like to run
- # evaluations, use input() instead.
+ # evaluations, use inputs() instead.
  inputs, labels = distorted_inputs()
-
  # Compute inference on the model inputs to make a prediction.
  predictions = inference(inputs)
-
  # Compute the total loss of the prediction with respect to the labels.
  loss = loss(predictions, labels)
-
  # Create a graph to run one step of training with respect to the loss.
  train_op = train(loss, global_step)
 """
@@ -41,9 +36,7 @@ import re
 import sys
 import tarfile
 
-import tensorflow.python.platform
 from six.moves import urllib
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorflow.python.platform import gfile
@@ -55,6 +48,8 @@ tf.app.flags.DEFINE_integer('batch_size', 128,
                             """Number of images to process in a batch.""")
 tf.app.flags.DEFINE_string('data_dir', '/tmp/cifar10_data',
                            """Path to the CIFAR-10 data directory.""")
+tf.app.flags.DEFINE_boolean('use_fp16', False,
+                            """Train the model using fp16.""")
 
 # Process images of this size. Note that this differs from the original CIFAR
 # image size of 32 x 32. If one alters this number, then the entire model
@@ -72,7 +67,7 @@ NUM_EPOCHS_PER_DECAY = 350.0      # Epochs after which learning rate decays.
 LEARNING_RATE_DECAY_FACTOR = 0.1  # Learning rate decay factor.
 INITIAL_LEARNING_RATE = 0.1       # Initial learning rate.
 
-# If a model is trained with multiple GPU's prefix all Op names with tower_name
+# If a model is trained with multiple GPUs, prefix all Op names with tower_name
 # to differentiate the operations. Note that this prefix is removed from the
 # names of the summaries when visualizing a model.
 TOWER_NAME = 'tower'
@@ -82,10 +77,8 @@ DATA_URL = 'http://www.cs.toronto.edu/~kriz/cifar-10-binary.tar.gz'
 
 def _activation_summary(x):
   """Helper to create summaries for activations.
-
   Creates a summary that provides a histogram of activations.
   Creates a summary that measure the sparsity of activations.
-
   Args:
     x: Tensor
   Returns:
@@ -100,39 +93,38 @@ def _activation_summary(x):
 
 def _variable_on_cpu(name, shape, initializer):
   """Helper to create a Variable stored on CPU memory.
-
   Args:
     name: name of the variable
     shape: list of ints
     initializer: initializer for Variable
-
   Returns:
     Variable Tensor
   """
   with tf.device('/cpu:0'):
-    var = tf.get_variable(name, shape, initializer=initializer)
+    dtype = tf.float16 if FLAGS.use_fp16 else tf.float32
+    var = tf.get_variable(name, shape, initializer=initializer, dtype=dtype)
   return var
 
 
 def _variable_with_weight_decay(name, shape, stddev, wd):
   """Helper to create an initialized Variable with weight decay.
-
   Note that the Variable is initialized with a truncated normal distribution.
   A weight decay is added only if one is specified.
-
   Args:
     name: name of the variable
     shape: list of ints
     stddev: standard deviation of a truncated Gaussian
     wd: add L2Loss weight decay multiplied by this float. If None, weight
         decay is not added for this Variable.
-
   Returns:
     Variable Tensor
   """
-  var = _variable_on_cpu(name, shape,
-                         tf.truncated_normal_initializer(stddev=stddev))
-  if wd:
+  dtype = tf.float16 if FLAGS.use_fp16 else tf.float32
+  var = _variable_on_cpu(
+      name,
+      shape,
+      tf.truncated_normal_initializer(stddev=stddev, dtype=dtype))
+  if wd is not None:
     weight_decay = tf.mul(tf.nn.l2_loss(var), wd, name='weight_loss')
     tf.add_to_collection('losses', weight_decay)
   return var
@@ -140,10 +132,8 @@ def _variable_with_weight_decay(name, shape, stddev, wd):
 
 def inference(images):
   """Build the CIFAR-10 model.
-
   Args:
     images: Images returned from distorted_inputs() or inputs().
-
   Returns:
     Logits.
   """
@@ -154,8 +144,10 @@ def inference(images):
   #
   # conv1
   with tf.variable_scope('conv1') as scope:
-    kernel = _variable_with_weight_decay('weights', shape=[5, 5, 3, 64],
-                                         stddev=1e-4, wd=0.0)
+    kernel = _variable_with_weight_decay('weights',
+                                         shape=[5, 5, 3, 64],
+                                         stddev=5e-2,
+                                         wd=0.0)
     conv = tf.nn.conv2d(images, kernel, [1, 1, 1, 1], padding='SAME')
     biases = _variable_on_cpu('biases', [64], tf.constant_initializer(0.0))
     bias = tf.nn.bias_add(conv, biases)
@@ -171,8 +163,10 @@ def inference(images):
 
   # conv2
   with tf.variable_scope('conv2') as scope:
-    kernel = _variable_with_weight_decay('weights', shape=[5, 5, 64, 64],
-                                         stddev=1e-4, wd=0.0)
+    kernel = _variable_with_weight_decay('weights',
+                                         shape=[5, 5, 64, 64],
+                                         stddev=5e-2,
+                                         wd=0.0)
     conv = tf.nn.conv2d(norm1, kernel, [1, 1, 1, 1], padding='SAME')
     biases = _variable_on_cpu('biases', [64], tf.constant_initializer(0.1))
     bias = tf.nn.bias_add(conv, biases)
@@ -189,15 +183,12 @@ def inference(images):
   # local3
   with tf.variable_scope('local3') as scope:
     # Move everything into depth so we can perform a single matrix multiply.
-    dim = 1
-    for d in pool2.get_shape()[1:].as_list():
-      dim *= d
-    reshape = tf.reshape(pool2, [FLAGS.batch_size, dim])
-
+    reshape = tf.reshape(pool2, [FLAGS.batch_size, -1])
+    dim = reshape.get_shape()[1].value
     weights = _variable_with_weight_decay('weights', shape=[dim, 384],
                                           stddev=0.04, wd=0.004)
     biases = _variable_on_cpu('biases', [384], tf.constant_initializer(0.1))
-    local3 = tf.nn.relu_layer(reshape, weights, biases, name=scope.name)
+    local3 = tf.nn.relu(tf.matmul(reshape, weights) + biases, name=scope.name)
     _activation_summary(local3)
 
   # local4
@@ -205,7 +196,7 @@ def inference(images):
     weights = _variable_with_weight_decay('weights', shape=[384, 192],
                                           stddev=0.04, wd=0.004)
     biases = _variable_on_cpu('biases', [192], tf.constant_initializer(0.1))
-    local4 = tf.nn.relu_layer(local3, weights, biases, name=scope.name)
+    local4 = tf.nn.relu(tf.matmul(local3, weights) + biases, name=scope.name)
     _activation_summary(local4)
 
   # softmax, i.e. softmax(WX + b)
@@ -214,7 +205,7 @@ def inference(images):
                                           stddev=1/192.0, wd=0.0)
     biases = _variable_on_cpu('biases', [NUM_CLASSES],
                               tf.constant_initializer(0.0))
-    softmax_linear = tf.nn.xw_plus_b(local4, weights, biases, name=scope.name)
+    softmax_linear = tf.add(tf.matmul(local4, weights), biases, name=scope.name)
     _activation_summary(softmax_linear)
 
   return softmax_linear
@@ -222,28 +213,18 @@ def inference(images):
 
 def loss(logits, labels):
   """Add L2Loss to all the trainable variables.
-
-  Add summary for for "Loss" and "Loss/avg".
+  Add summary for "Loss" and "Loss/avg".
   Args:
     logits: Logits from inference().
     labels: Labels from distorted_inputs or inputs(). 1-D tensor
             of shape [batch_size]
-
   Returns:
     Loss tensor of type float.
   """
-  # Reshape the labels into a dense Tensor of
-  # shape [batch_size, NUM_CLASSES].
-  sparse_labels = tf.reshape(labels, [FLAGS.batch_size, 1])
-  indices = tf.reshape(tf.range(FLAGS.batch_size), [FLAGS.batch_size, 1])
-  concated = tf.concat(1, [indices, sparse_labels])
-  dense_labels = tf.sparse_to_dense(concated,
-                                    [FLAGS.batch_size, NUM_CLASSES],
-                                    1.0, 0.0)
-
   # Calculate the average cross entropy loss across the batch.
-  cross_entropy = tf.nn.softmax_cross_entropy_with_logits(
-      logits, dense_labels, name='cross_entropy_per_example')
+  labels = tf.cast(labels, tf.int64)
+  cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
+      logits, labels, name='cross_entropy_per_example')
   cross_entropy_mean = tf.reduce_mean(cross_entropy, name='cross_entropy')
   tf.add_to_collection('losses', cross_entropy_mean)
 
@@ -254,10 +235,8 @@ def loss(logits, labels):
 
 def _add_loss_summaries(total_loss):
   """Add summaries for losses in CIFAR-10 model.
-
   Generates moving average for all losses and associated summaries for
   visualizing the performance of the network.
-
   Args:
     total_loss: Total loss from loss().
   Returns:
@@ -268,7 +247,7 @@ def _add_loss_summaries(total_loss):
   losses = tf.get_collection('losses')
   loss_averages_op = loss_averages.apply(losses + [total_loss])
 
-  # Attach a scalar summmary to all individual losses and the total loss; do the
+  # Attach a scalar summary to all individual losses and the total loss; do the
   # same for the averaged version of the losses.
   for l in losses + [total_loss]:
     # Name each loss as '(raw)' and name the moving average version of the loss
@@ -281,10 +260,8 @@ def _add_loss_summaries(total_loss):
 
 def train(total_loss, global_step):
   """Train CIFAR-10 model.
-
   Create an optimizer and apply to all trainable variables. Add moving
   average for all trainable variables.
-
   Args:
     total_loss: Total loss from loss().
     global_step: Integer Variable counting the number of training steps
@@ -321,7 +298,7 @@ def train(total_loss, global_step):
 
   # Add histograms for gradients.
   for grad, var in grads:
-    if grad:
+    if grad is not None:
       tf.histogram_summary(var.op.name + '/gradients', grad)
 
   # Track the moving averages of all trainable variables.
