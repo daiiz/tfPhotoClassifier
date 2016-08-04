@@ -25,7 +25,10 @@ def distorted_inputs (tfrecord_file_paths=[]):
     fqueue = tf.train.string_input_producer(tfrecord_file_paths)
     reader = tf.TFRecordReader()
     key, serialized_example = reader.read(fqueue)
-    features = tf.parse_single_example(serialized_example, dense_keys=['label', 'image'], dense_types=[tf.int64, tf.string])
+    features = tf.parse_single_example(serialized_example, features={
+        'label': tf.FixedLenFeature([], tf.int64),
+        'image': tf.FixedLenFeature([], tf.string)
+    })
     image = tf.image.decode_jpeg(features['image'], channels=size['depth'])
     image = tf.cast(image, tf.float32)
     image.set_shape([size['width'], size['height'], size['depth']])
@@ -86,30 +89,30 @@ def eval_once (theme, saver, summary_writer, top_k_op, summary_op):
 
 def evaluate (tfrecord_file_paths, theme):
     eval_dir = 'workspace/{}/eval'.format(theme)
-    images, labels = distorted_inputs(tfrecord_file_paths=tfrecord_file_paths)
-    logits = cifar10.inference(tf.image.resize_images(images, cifar10.IMAGE_SIZE, cifar10.IMAGE_SIZE))
+    with tf.Graph().as_default() as g:
+        images, labels = distorted_inputs(tfrecord_file_paths=tfrecord_file_paths)
+        logits = cifar10.inference(tf.image.resize_images(images, cifar10.IMAGE_SIZE, cifar10.IMAGE_SIZE))
 
-    # Calculate predictions.
-    top_k_op = tf.nn.in_top_k(logits, labels, 1)
+        # Calculate predictions.
+        top_k_op = tf.nn.in_top_k(logits, labels, 1)
 
-    variable_averages = tf.train.ExponentialMovingAverage(cifar10.MOVING_AVERAGE_DECAY)
-    variables_to_restore = {}
+        variable_averages = tf.train.ExponentialMovingAverage(cifar10.MOVING_AVERAGE_DECAY)
+        variables_to_restore = {}
 
-    for v in tf.all_variables():
-        if v in tf.trainable_variables():
-            restore_name = variable_averages.average_name(v)
-        else:
-            restore_name = v.op.name
-        variables_to_restore[restore_name] = v
+        for v in tf.all_variables():
+            if v in tf.trainable_variables():
+                restore_name = variable_averages.average_name(v)
+            else:
+                restore_name = v.op.name
+            variables_to_restore[restore_name] = v
 
-    saver = tf.train.Saver(variables_to_restore)
+        saver = tf.train.Saver(variables_to_restore)
 
-    # Build the summary operation based on the TF collection of Summaries.
-    summary_op = tf.merge_all_summaries()
-    graph_def = tf.get_default_graph().as_graph_def()
-    summary_writer = tf.train.SummaryWriter(eval_dir, graph_def=graph_def)
+        # Build the summary operation based on the TF collection of Summaries.
+        summary_op = tf.merge_all_summaries()
+        summary_writer = tf.train.SummaryWriter(eval_dir, g)
 
-    eval_once(theme, saver, summary_writer, top_k_op, summary_op)
+        eval_once(theme, saver, summary_writer, top_k_op, summary_op)
 
 
 if __name__ == '__main__':
