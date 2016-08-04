@@ -64,7 +64,7 @@ def train (tfrecord_file_paths, theme):
         summary_writer = tf.train.SummaryWriter(train_dir)
 
         # 初期化
-        ckpt = tf.train.get_checkpoint_state(train_dir)
+        ckpt = tf.train.get_checkpoint_state('./')
         if ckpt and ckpt.model_checkpoint_path:
             saver.restore(sess, ckpt.model_checkpoint_path)
         else:
